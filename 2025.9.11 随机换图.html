@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机换图</title>
+
+    <style>
+        body {
+            background: url(../科软表情包.jpg) no-repeat top center;
+            background-size: 500px;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 可选：添加一个按钮方便测试 */
+        button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 可选：添加一个按钮方便测试 -->
+    <button onclick="changeBackground()">更换图片</button>
+    
+    <script>
+        // 确保页面加载完成后执行代码
+        document.addEventListener('DOMContentLoaded', function() {
+            changeBackground();
+        });
+        
+        // 随机数生成函数
+        function getRandom(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // 更换背景图片的函数
+        function changeBackground() {
+            // 使用实际存在的图片文件
+            const images = ['科软表情包.jpg', '软微表情包.jpg', 'DHU.jpg', 'ECUST.jpg', 'SHU.jpg'];
+            const randomIndex = getRandom(0, images.length - 1);
+            
+            // // 添加调试信息，查看选择了哪个图片
+            // console.log('选择的图片:', images[randomIndex]);
+            
+            // // 为了防止浏览器缓存问题，添加一个时间戳参数
+            // const timestamp = new Date().getTime();
+            document.body.style.backgroundImage = `url(../${images[randomIndex]})`;
+            // ?t=${timestamp}
+        }
+    </script>
+</body>
+</html>

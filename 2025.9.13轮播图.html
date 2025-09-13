@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轮播图</title>
+    <style>
+        /* 轮播图容器 */
+        .slider-container {
+            width: 800px;
+            height: 500px;
+            margin: 50px auto;
+            position: relative;
+            overflow: hidden;
+            border: 5px solid #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 图片容器 - 使用flex布局横向排列所有图片 */
+        .slider-wrapper {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        /* 单张图片样式 */
+        .slider-item {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .slider-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* 图片标题样式 - 修改为底部正中间显示 */
+        .slide-title {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 30px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        /* 鼠标悬停时显示标题 */
+        .slider-item:hover .slide-title {
+            opacity: 1;
+            transform: translateX(-50%);
+        }
+        
+        /* 左右箭头按钮 */
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .arrow:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .arrow-left {
+            left: 10px;
+        }
+        
+        .arrow-right {
+            right: 10px;
+        }
+        
+        /* 底部指示器 */
+        .indicators {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .indicator.active {
+            background-color: white;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- 轮播图容器 -->
+    <div class="slider-container">
+        <!-- 图片容器 -->
+        <div class="slider-wrapper">
+            <!-- 使用你现有的图片资源 -->
+            <div class="slider-item">
+                <img src="../科软表情包.jpg" alt="科软表情包">
+                <div class="slide-title">科软表情包</div>
+            </div>
+            <div class="slider-item">
+                <img src="../软微表情包.jpg" alt="软微表情包">
+                <div class="slide-title">软微表情包</div>
+            </div>
+            <div class="slider-item">
+                <img src="../DHU.jpg" alt="DHU">
+                <div class="slide-title">东华大学</div>
+            </div>
+            <div class="slider-item">
+                <img src="../ECUST.jpg" alt="ECUST">
+                <div class="slide-title">华东理工大学</div>
+            </div>
+            <div class="slider-item">
+                <img src="../SHU.jpg" alt="SHU">
+                <div class="slide-title">上海大学</div>
+            </div>
+        </div>
+        
+        <!-- 左右箭头 -->
+        <button class="arrow arrow-left">&lt;</button>
+        <button class="arrow arrow-right">&gt;</button>
+        
+        <!-- 底部指示器 -->
+        <div class="indicators"></div>
+    </div>
+    
+    <script>
+        // 获取DOM元素
+        const sliderContainer = document.querySelector('.slider-container');
+        const sliderWrapper = document.querySelector('.slider-wrapper');
+        const sliderItems = document.querySelectorAll('.slider-item');
+        const arrowLeft = document.querySelector('.arrow-left');
+        const arrowRight = document.querySelector('.arrow-right');
+        const indicatorsContainer = document.querySelector('.indicators');
+        
+        // 轮播图数量
+        const totalSlides = sliderItems.length;
+        // 当前索引
+        let currentIndex = 0;
+        // 自动轮播定时器
+        let slideInterval = null;
+        // 轮播图宽度
+        const slideWidth = sliderContainer.offsetWidth;
+        
+        // 创建指示器
+        for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('button');
+            indicator.classList.add('indicator');
+            if (i === 0) {
+                indicator.classList.add('active');
+            }
+            // 点击指示器切换图片
+            indicator.addEventListener('click', () => {
+                goToSlide(i);
+                resetInterval();
+            });
+            indicatorsContainer.appendChild(indicator);
+        }
+        
+        const indicators = document.querySelectorAll('.indicator');
+        
+        // 移动到指定索引的轮播图
+        function goToSlide(index) {
+            currentIndex = index;
+            // 限制索引在有效范围内
+            if (currentIndex < 0) {
+                currentIndex = totalSlides - 1;
+            } else if (currentIndex >= totalSlides) {
+                currentIndex = 0;
+            }
+            
+            // 移动图片容器
+            sliderWrapper.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            
+            // 更新指示器状态
+            updateIndicators();
+        }
+        
+        // 更新指示器状态
+        function updateIndicators() {
+            indicators.forEach((indicator, index) => {
+                if (index === currentIndex) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+        
+        // 下一张
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+        
+        // 上一张
+        function prevSlide() {
+            goToSlide(currentIndex - 1);
+        }
+        
+        // 开始自动轮播
+        function startInterval() {
+            // 确保在开始前清除任何可能存在的定时器
+            if (slideInterval !== null) {
+                clearInterval(slideInterval);
+            }
+            slideInterval = setInterval(nextSlide, 1500); // 每1.5秒切换一次
+        }
+        
+        // 重置定时器
+        function resetInterval() {
+            // 先清除旧定时器
+            if (slideInterval !== null) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+            // 再创建新定时器
+            startInterval();
+        }
+        
+        // 事件监听
+        arrowLeft.addEventListener('click', () => {
+            prevSlide();
+            resetInterval();
+        });
+        
+        arrowRight.addEventListener('click', () => {
+            nextSlide();
+            resetInterval();
+        });
+        
+        // 鼠标悬停时暂停自动轮播
+        sliderContainer.addEventListener('mouseenter', () => {
+            if (slideInterval !== null) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+        });
+        
+        // 鼠标离开时继续自动轮播
+        sliderContainer.addEventListener('mouseleave', () => {
+            startInterval();
+        });
+        
+        // 初始化
+        startInterval();
+    </script>
+</body>
+</html>
